@@ -1,9 +1,11 @@
 #include <windows.h>
+#include "utils.cpp"
+#include "render.cpp"
 
-bool running = true;
-int w;
-int h;
-void* buffer_memory;
+global_var bool running = true;
+global_var int w;
+global_var int h;
+global_var  void* buffer_memory;
 BITMAPINFO	buffer_bitmap_info;
 
 LRESULT CALLBACK window_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -66,14 +68,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 			TranslateMessage(&message);
 			DispatchMessage(&message);
 		}
-		unsigned int* pixel = (unsigned int*)buffer_memory;
-		for (int i = 0; i < h; ++i) {
-			for (int j = 0; j < w; ++j) {
-				*pixel++ = i * j;
-			}
-		}
+		clear_screen(buffer_memory, h, w, 0xff5500);
+		draw_rect(buffer_memory, w, h, 50, 50, 200, 500, 0x00ff22);
 		StretchDIBits(hdc, 0, 0, w, h, 0, 0, w, h, buffer_memory, &buffer_bitmap_info, DIB_RGB_COLORS, SRCCOPY);
 	}
-
-	
 }
