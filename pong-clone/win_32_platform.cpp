@@ -10,7 +10,8 @@ struct Render_State {
 };
 global_var Render_State renderstate;
 #include "render.cpp"
-
+#include "platform_common.cpp"
+#include "game.cpp"
 
 LRESULT CALLBACK window_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	LRESULT result = 0;
@@ -49,7 +50,7 @@ LRESULT CALLBACK window_callback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
 
-	//ShowCursor(FALSE);
+	ShowCursor(FALSE);
 
 	// create WNDCLASS
 	WNDCLASS window_class = {};
@@ -65,15 +66,63 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 	HWND window = CreateWindow(window_class.lpszClassName, title, WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, 0, 0, hInstance, 0);
 	HDC hdc = GetDC(window);
 
+	Input input = {};
+
+	float delta_time = 0.016666f;
+	LARGE_INTEGER frame_begin_time;
+	QueryPerformanceCounter(&frame_begin_time);
+
+	float performance_frequency;
+	{
+		LARGE_INTEGER perf;
+		QueryPerformanceFrequency(&perf);
+		performance_frequency = (float)perf.QuadPart;
+	}
 
 	while (running) {
 		MSG message;
-		while (PeekMessage(&message, window, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&message);
-			DispatchMessage(&message);
+
+		for (int i = 0; i < BUTTON_COUNT; ++i) {
+			input.buttons[i].changed = false;
 		}
-		clear_screen(0xff5500);
-		draw_rect(0, 0, .2, .2, 0x00ff22);
+		while (PeekMessage(&message, window, 0, 0, PM_REMOVE)) {
+			switch (message.message) {
+			case WM_KEYUP: {
+				for (int i = 0; i < BUTTON_COUNT; ++i) input.buttons[i].is_down = false;
+			} break;
+			case WM_KEYDOWN: {
+				unsigned int vk_code = (unsigned int)message.wParam;
+				bool is_down = ((message.lParam & (1 << 32)) == 0);
+
+
+#define process_b(b, vk)\
+case vk:{\
+input.buttons[b].is_down = is_down;\
+input.buttons[b].changed = true;} break;
+
+				switch (vk_code) {
+					process_b(BUTTON_UP, VK_UP);
+					process_b(BUTTON_DOWN, VK_DOWN);
+					process_b(BUTTON_LEFT, VK_LEFT);
+					process_b(BUTTON_RIGHT, VK_RIGHT);
+				}
+			} break;
+			default: {
+				TranslateMessage(&message);
+				DispatchMessage(&message);
+			}
+		  }
+		}
+
+		// simulate game frame
+		simulate_game(&input, delta_time);
+
+		// render pixels
 		StretchDIBits(hdc, 0, 0, renderstate.width, renderstate.height, 0, 0, renderstate.width, renderstate.height, renderstate.buffer_memory, &renderstate.buffer_bitmap_info, DIB_RGB_COLORS, SRCCOPY);
+
+		LARGE_INTEGER frame_end_time;
+		QueryPerformanceCounter(&frame_end_time);
+		delta_time = (float)(frame_end_time.QuadPart - frame_begin_time.QuadPart) / performance_frequency;
+		frame_begin_time = frame_end_time;
 	}
 }
