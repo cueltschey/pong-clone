@@ -6,7 +6,7 @@
 float player_1_p, player_1_dp, player_2_p, player_2_dp;
 float arena_half_size_x = 85, arena_half_size_y = 45;
 float player_half_size_x = 2.5, player_half_size_y = 12;
-float ball_p_x, ball_p_y, ball_dp_x = 100, ball_dp_y = 0, ball_half_size = 1;
+float ball_p_x, ball_p_y, ball_dp_x = 150, ball_dp_y = 0, ball_half_size = 1;
 
 internal void
 simulate_player(float &p, float &dp, float &ddp, float dt) {
@@ -52,14 +52,14 @@ simulate_game(Input* input, float dt) {
 		ball_p_y - ball_half_size < player_1_p + player_half_size_y) {
 		ball_p_x = 80 - player_half_size_x - ball_half_size;
 		ball_dp_x *= -1;
-		ball_dp_y = (ball_p_y - player_1_p) * 3;
+		ball_dp_y = (ball_p_y - player_1_p) * 5;
 	}else if (ball_p_x + ball_half_size >- 80 - player_half_size_x &&
 		ball_p_x - ball_half_size < -80 + player_half_size_x &&
 		ball_p_y + ball_half_size > player_2_p - player_half_size_y &&
 		ball_p_y + ball_half_size < player_2_p + player_half_size_y) {
 		ball_p_x = -80 + player_half_size_x + ball_half_size;
 		ball_dp_x *= -1;
-		ball_dp_y = (ball_p_y - player_2_p) * 3;
+		ball_dp_y = (ball_p_y - player_2_p) * 5;
 	}
 
 	if (ball_p_y + ball_half_size > arena_half_size_y) {
