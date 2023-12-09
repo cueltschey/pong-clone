@@ -1,4 +1,4 @@
-internal void
+static void
 render_pixels() {
 	unsigned int* pixel = (unsigned int*)renderstate.buffer_memory;
 	for (int i = 0; i < renderstate.height; ++i) {
@@ -7,7 +7,7 @@ render_pixels() {
 		}
 	}
 }
-internal void
+static void
 clear_screen(unsigned int color) {
 	unsigned int* pixel = (unsigned int*)renderstate.buffer_memory;
 	for (int i = 0; i < renderstate.height; ++i) {
@@ -17,7 +17,7 @@ clear_screen(unsigned int color) {
 	}
 }
 
-internal void
+static void
 draw_rect_in_pixels(int x0, int y0, int x1, int y1, unsigned int color) {
 
 	x0 = clamp(0, x0, renderstate.width);
@@ -35,9 +35,9 @@ draw_rect_in_pixels(int x0, int y0, int x1, int y1, unsigned int color) {
 }
 
 
-global_var float render_scale = 0.01f;
+static float render_scale = 0.01f;
 
-internal void
+static void
 draw_rect(float x, float y, float half_size_x, float half_size_y, unsigned int color) {
 
 	x *= renderstate.height * render_scale;
